@@ -68,7 +68,6 @@ var user1 = {
 
 var App = React.createClass({displayName: "App",
     getInitialState: function() {
-        //return {user: user1};
         return {};
     },
     handleSignin: function(e) {
@@ -80,15 +79,49 @@ var App = React.createClass({displayName: "App",
         navigator.id.logout();
         this.setState({user: undefined});
     },
+    serverLogin: function(assertion) {
+        return $.post('/auth/browserid', {
+            assertion: assertion
+        }).then((function(_this) {
+            return function(data, textStatus, jqXHR) {
+                var ref;
+                if (data != null ? (ref = data.user) != null ? ref._id : void 0 : void 0) {
+                    console.log("current user id: " + data.user._id);
+                    return _this.setState({user: data.user});
+                } else {
+                    _this.setState({user: undefined});
+                    return alert('Login failed. Try again later, maybe?');
+                }
+            };
+        })(this), (function(_this) {
+            return function(jqXHR, textStatus, errorThrown) {
+                alert("Login failure: " + textStatus);
+                return navigator.id.logout();
+            };
+        })(this));
+    },
+    serverLogout: function() {
+        return $.get('/logout').then((function(_this) {
+            return function(data, textStatus, jqXHR) {
+                _this.setState({user: undefined});
+                return console.log("current user: null");
+            };
+        })(this), (function(_this) {
+            return function(jqXHR, textStatus, errorThrown) {
+                return alert("Logout failure: " + textStatus);
+            };
+        })(this));
+    },
     componentDidMount: function() {
         navigator.id.watch({
                 loggedInUser: null,
                 onlogin: function(assertion) {
                     alert(assertion);
-                    this.setState({user: user1});
+                    this.serverLogin(assertion);
                 }.bind(this),
                 onlogout: function() {
                     this.setState({user: undefined});
+                    this.serverLogout();
                 }.bind(this)
             }
         );

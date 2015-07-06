@@ -21,6 +21,8 @@
   },
   "devDependencies": {
     "gulp-react": "^3.0.1",
-    "gulp-sourcemaps": "^1.5.2"
+    "gulp-sourcemaps": "^1.5.2",
+    "passport": "^0.2.2",
+    "passport-browserid": "^0.1.4"
   }
 }

@@ -4,33 +4,54 @@
 ###
 
 # TODO: add this back
-# user_router = require './user'
+user_router = require './user'
+passport = require 'passport'
+BrowserIDStrategy = require('passport-browserid').Strategy # login will use browserid
+User = require('../lib/user').User
 
-
-
-exports.index = (req, res) ->
+index = (req, res) ->
   res.render 'index', { title: 'Randomfactor Stack' }
 
-exports.test = (req, res) ->
+test = (req, res) ->
   res.render 'test/test'
 
-# only allow same user or admin to modify a user after it is created
-authorize_owner_or_admin = (req, res, next) ->
-  if req.user?._id is req.params?.id
-    next()
-  else if 'admin' in req.user?.roles
-    next()
-  else
-    res.status(401).send('Not authorized.')
+# setup for passport to use browserid
+exports.initialize = (app) ->
+  passport.serializeUser (user, done) ->
+    done null, user._id
+
+  passport.deserializeUser (email, done) ->
+    User.find_by_id(email).then(
+      (user) ->
+        done null, user
+      (err) ->
+        done err
+    )
+
+  passport.use new BrowserIDStrategy {
+      audience: app.get 'primary_url'
+    },
+    (email, done) ->
+      User.find_or_create_by_email(email).then(
+        (user) ->
+          done null, user
+        (err) ->
+          console.log 'lookup by email failed'
+          done err
+      )
 
 exports.map_routes = (app) ->
-  app.get '/', exports.index
-  app.get '/test', exports.test
-# app.get '/users', user_router.index
-# app.post '/users', user_router.create
-# app.get '/users/:id', user_router.find
-# app.put '/users/:id', authorize_owner_or_admin, user_router.modify
-# app.del '/users/:id', user_router.delete
+  app.get '/', index
+  app.get '/test', test
 
-# TODO: add this back
-# exports.User = user_router
+  # define routes for login with browserid and logout
+  app.get '/logout', (req, res) ->
+    req.logout()
+    res.json { user: req.user }
+  app.post '/auth/browserid',
+    passport.authenticate 'browserid', { failureRedirect: '/logout' }
+    (req, res) ->
+      res.json { user: req.user }
+
+  # routing for /api/users...
+  user_router.map_routes app

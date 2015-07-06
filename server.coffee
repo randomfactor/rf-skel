@@ -6,13 +6,10 @@ cookieParser = require('cookie-parser')
 bodyParser = require('body-parser')
 session = require('express-session')
 sessStore = require('connect-redis')(session)
+passport = require('passport')
 
-# storage documents
-db = require './lib/dbdata'
-User = require('./lib/user').User
-
-routes = require('./routes/index')
-# users = require('./routes/users')
+db = require './lib/dbdata' # storage documents
+routes = require './routes/index' # express routes
 
 app = express()
 
@@ -44,6 +41,7 @@ else if ('production' == env)
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
 app.set('couchurl', couchdb_url)    # save the persistent storage URL for later initialization
+app.set('primary_url', primary_url) # communicate primary_url to router
 
 # uncomment after placing your favicon in /public
 #app.use(favicon(__dirname + '/public/favicon.ico'))
@@ -52,10 +50,14 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(session(session_config))
-app.use(require('stylus').middleware(path.join(__dirname, 'public')))
-app.use(express.static(path.join(__dirname, 'public')))
+app.use passport.initialize()
+app.use passport.session()
 
 routes.map_routes app
+
+
+app.use(require('stylus').middleware(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'public')))
 
 # catch 404 and forward to error handler
 app.use (req, res, next) =>
@@ -82,6 +84,9 @@ app.use (err, req, res, next) =>
   res.render 'error',
     message: err.message
     error: {}
+
+# configure passport to use browserid
+routes.initialize app
 
 # initialize the URL for persistent json document storage
 db.setup { db_url: app.get 'couchurl' }
