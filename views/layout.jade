@@ -2,6 +2,15 @@ doctype html
 html
   head
     title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
+    meta(http-equiv="X-UA-Compatible" content="IE=Edge")
+    link(rel='stylesheet', href='/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/css/style.css')
+    script(src='/js/jquery.min.js')
+    script(src='/js/bootstrap.min.js')
+    script(src='/js/react.js')
+    script(src='https://login.persona.org/include.orig.js')
+    script(src='/js/App.js')
   body
     block content
+    script
+      | React.render(React.createElement(App, null), document.getElementById('content'));

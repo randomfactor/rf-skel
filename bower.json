@@ -1,0 +1,29 @@
+{
+  "name": "rf-skel",
+  "version": "0.0.0",
+  "homepage": "https://github.com/randomfactor/rf-skel",
+  "authors": [
+    "Randall Krebs <randumfaktor@gmail.com>"
+  ],
+  "description": "SPA skeleton in React",
+  "main": "views/index.jade",
+  "moduleType": [
+    "es6"
+  ],
+  "keywords": [
+    "reactjs"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "react": "~0.13.3",
+    "bootstrap": "~3.3.5"
+  }
+}
